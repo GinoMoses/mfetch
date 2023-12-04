@@ -19,18 +19,21 @@ fn main() {
         .expect("failed to execute process");
     args.push(String::from_utf8_lossy(&hostname.stdout).trim().to_string());
 
-    let os = &fs::read_to_string("/etc/os-release")
-        .expect("Something went wrong reading the file");
-    for line in os.lines() {
-        if line.contains("PRETTY_NAME") {
-            let os = line.split("=").collect::<Vec<&str>>();
-            args.push(os[1].to_string().replace("\"", ""));
-            break;
+    match fs::read_to_string("/etc/os-release") {
+        Ok(os) => {
+            for line in os.lines() {
+                if line.contains("PRETTY_NAME") {
+                    let os = line.split("=").collect::<Vec<&str>>();
+                    args.push(os[1].to_string().replace("\"", ""));
+                    break;
+                }
+            }
         }
-    }
+        Err(_) => args.push("".to_string()),
+    };
 
     let host = &fs::read_to_string("/sys/devices/virtual/dmi/id/product_name")
-        .expect("Something went wrong reading the file");
+        .unwrap_or_else(|_| "".to_string());
     args.push(host.trim().to_string());
 
     let kernel = Command::new("sh")
@@ -71,10 +74,19 @@ impl Arguments {
         Arguments { hostname, user, os, host, kernel, uptime }
     }
     fn display(&self) {
+        // there is probably a better way to do this
+        // but this is the best I could come up with tbh
+        // I'm not very good at Rust yet
+        // might fix later idk
+        // might honestly refactor the whole idea of using a struct
         println!("{}@{}", (self.user).blue().bold(), (self.hostname).blue().bold());
         println!("-------------------------");
-        println!("{} >> {}", "OS".blue().bold(), self.os);
-        println!("{} >> {}", "Host".blue().bold(), self.host);
+        if self.os != "" {
+            println!("{} >> {}", "OS".blue().bold(), self.os);
+        }
+        if self.host != "" {
+            println!("{} >> {}", "Host".blue().bold(), self.host);
+        }
         println!("{} >> {}", "Kernel".blue().bold(), self.kernel);
         println!("{} >> {}", "Uptime".blue().bold(), self.uptime);
         

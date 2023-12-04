@@ -4,8 +4,9 @@ A system information tool written in rust
 # supported systems
 Currently supported systems are
 - `Arch Linux`
-Note that mfetch might still work on unsopported linux distros, but information like the number of packages might be invalid/missing
+
+Note that mfetch should have the error handling required for it to work on unsupported systems, but some infromaton will not be displayed
 
 # installation
 
-#TODO
+# TODO
