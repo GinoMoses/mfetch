@@ -42,13 +42,20 @@ fn main() {
         .output()
         .expect("failed to execute process");
     args.push(String::from_utf8_lossy(&kernel.stdout).trim().to_string());
-
+    
     let uptime = Command::new("sh")
         .arg("-c")
         .arg("uptime -p")
         .output()
         .expect("failed to execute process");
     args.push(String::from_utf8_lossy(&uptime.stdout).trim().to_string());
+
+    let shell = Command::new("sh")
+        .arg("-c")
+        .arg("basename $SHELL")
+        .output()
+        .expect("failed to execute process");
+    args.push(String::from_utf8_lossy(&shell.stdout).trim().to_string());
 
     Arguments::display(&Arguments::build(&args));
 }
@@ -60,6 +67,8 @@ struct Arguments {
     host: String,
     kernel: String,
     uptime: String,
+    shell: String,
+
 }
 
 impl Arguments {
@@ -70,8 +79,9 @@ impl Arguments {
         let host = args[3].clone();
         let kernel = args[4].clone();
         let uptime = args[5].clone();
+        let shell = args[6].clone();
 
-        Arguments { hostname, user, os, host, kernel, uptime }
+        Arguments { hostname, user, os, host, kernel, uptime, shell }
     }
     fn display(&self) {
         // there is probably a better way to do this
@@ -81,15 +91,15 @@ impl Arguments {
         // might honestly refactor the whole idea of using a struct
         println!("{}@{}", (self.user).blue().bold(), (self.hostname).blue().bold());
         println!("-------------------------");
-        if self.os != "" {
+        // if self.os != "" {
             println!("{} >> {}", "OS".blue().bold(), self.os);
-        }
-        if self.host != "" {
+        // }
+        // if self.host != "" {
             println!("{} >> {}", "Host".blue().bold(), self.host);
-        }
+        // }
         println!("{} >> {}", "Kernel".blue().bold(), self.kernel);
         println!("{} >> {}", "Uptime".blue().bold(), self.uptime);
-        
+        println!("{} >> {}", "Shell".blue().bold(), self.shell); 
         // println!("{}", "  ".on_blue());
     }
 }
