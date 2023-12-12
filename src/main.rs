@@ -68,7 +68,6 @@ fn main() {
                     let memtotal = &memtotal[1].split("kB").collect::<Vec<&str>>();
                     let memtotal = &memtotal[0].trim();
                     let memtotal = &memtotal.parse::<u32>().unwrap() / 1024;
-                    println!("[DEBUG] {:?}", &memtotal);
                     memused = memtotal;
                     memory.push_str(&memtotal.to_string());
                 }
@@ -115,17 +114,16 @@ impl Arguments {
     fn display(&self) {
         // there is probably a better way to do this
         // but this is the best I could come up with tbh
-        // I'm not very good at Rust yet
         // might fix later idk
         // might honestly refactor the whole idea of using a struct
         println!("{}@{}", (self.user).blue().bold(), (self.hostname).blue().bold());
         println!("-------------------------");
-        // if self.os != "" {
+        if self.os != "" {
             println!("{} >> {}", "OS".blue().bold(), self.os);
-        // }
-        // if self.host != "" {
+        }
+        if self.host != "" {
             println!("{} >> {}", "Host".blue().bold(), self.host);
-        // }
+        }
         println!("{} >> {}", "Kernel".blue().bold(), self.kernel);
         println!("{} >> {}", "Uptime".blue().bold(), self.uptime);
         println!("{} >> {}", "Shell".blue().bold(), self.shell); 
