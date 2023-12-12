@@ -57,9 +57,37 @@ fn main() {
         .expect("failed to execute process");
     args.push(String::from_utf8_lossy(&shell.stdout).trim().to_string());
 
+    let meminfo = &fs::read_to_string("/proc/meminfo");
+    let mut memory = String::new();
+    let mut memused: u32 = 0;
+    match meminfo {
+        Ok(mem) => {
+            for line in mem.lines() {
+                if line.contains("MemTotal") {
+                    let memtotal = &line.split(":").collect::<Vec<&str>>();
+                    let memtotal = &memtotal[1].split("kB").collect::<Vec<&str>>();
+                    let memtotal = &memtotal[0].trim();
+                    let memtotal = &memtotal.parse::<u32>().unwrap() / 1024;
+                    println!("[DEBUG] {:?}", &memtotal);
+                    memused = memtotal;
+                    memory.push_str(&memtotal.to_string());
+                }
+                if line.contains("MemAvailable") {
+                    let memav = &line.split(":").collect::<Vec<&str>>();
+                    let memav = &memav[1].split("kB").collect::<Vec<&str>>();
+                    let memav = &memav[0].trim();
+                    let memav = &memav.parse::<u32>().unwrap() / 1024;
+                    memused -= &memav;
+                    memory = format!("{}M / {}M", memused, memory);
+                }
+            }
+        }
+        Err(_) => memory.push_str(""),
+    };
+    args.push(memory.trim().to_string());
+
     Arguments::display(&Arguments::build(&args));
 }
-
 struct Arguments {
     user: String,
     hostname: String,
@@ -68,7 +96,7 @@ struct Arguments {
     kernel: String,
     uptime: String,
     shell: String,
-
+    memory: String,
 }
 
 impl Arguments {
@@ -80,8 +108,9 @@ impl Arguments {
         let kernel = args[4].clone();
         let uptime = args[5].clone();
         let shell = args[6].clone();
+        let memory = args[7].clone();
 
-        Arguments { hostname, user, os, host, kernel, uptime, shell }
+        Arguments { hostname, user, os, host, kernel, uptime, shell, memory }
     }
     fn display(&self) {
         // there is probably a better way to do this
@@ -101,5 +130,6 @@ impl Arguments {
         println!("{} >> {}", "Uptime".blue().bold(), self.uptime);
         println!("{} >> {}", "Shell".blue().bold(), self.shell); 
         // println!("{}", "  ".on_blue());
+        println!("{} >> {}", "Memory".blue().bold(), self.memory);
     }
 }
