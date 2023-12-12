@@ -7,7 +7,7 @@ Tested systems are
 
 # installation
 
-## ensure you have `cargo`, `rustup` and `rustc` installed 
+#### ensure you have `cargo`, `rustup` and `rustc` installed 
 
 ```bash
 git clone https://github.com/GinoMoses/mfetch
