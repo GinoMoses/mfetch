@@ -23,5 +23,5 @@ make all
 # TODO
 
 -   ensure mfetch supports other distros like `RedHat`
--   fetch more system infromation (e.g CPU, GPU)
 -   add a config file to allow slight customization
+-   ASCII art based on the operating system

@@ -56,7 +56,7 @@ fn main() {
         .output()
         .expect("failed to execute process");
     args.push(String::from_utf8_lossy(&shell.stdout).trim().to_string());
-
+    
     let meminfo = &fs::read_to_string("/proc/meminfo");
     let mut memory = String::new();
     let mut memused: u32 = 0;
@@ -84,6 +84,30 @@ fn main() {
         Err(_) => memory.push_str(""),
     };
     args.push(memory.trim().to_string());
+    
+    match &fs::read_to_string("/proc/cpuinfo") {
+        Ok(cpu) => {
+            for line in cpu.lines() {
+                if line.contains("model name") {
+                    let cpu = &line.split(":").collect::<Vec<&str>>();
+                    let cpu = &cpu[1].trim();
+                    args.push(cpu.to_string());
+                    break;
+                }
+            }
+        }
+        Err(_) => args.push("".to_string()),
+    }
+   
+    // for some reason lspci takes a while to execute
+    // I don't think there's a file like /proc/cpuinfo for gpus
+    // imma look into it later
+    let gpu = Command::new("sh")
+        .arg("-c")
+        .arg("lspci | grep VGA | cut -d ':' -f3 | cut -d '(' -f1")
+        .output()
+        .expect("failed to execute process");
+    args.push(String::from_utf8_lossy(&gpu.stdout).trim().to_string());
 
     Arguments::display(&Arguments::build(&args));
 }
@@ -96,6 +120,8 @@ struct Arguments {
     uptime: String,
     shell: String,
     memory: String,
+    cpu: String,
+    gpu: String,
 }
 
 impl Arguments {
@@ -108,8 +134,10 @@ impl Arguments {
         let uptime = args[5].clone();
         let shell = args[6].clone();
         let memory = args[7].clone();
+        let cpu = args[8].clone();
+        let gpu = args[9].clone();
 
-        Arguments { hostname, user, os, host, kernel, uptime, shell, memory }
+        Arguments { hostname, user, os, host, kernel, uptime, shell, memory, cpu, gpu }
     }
     fn display(&self) {
         // there is probably a better way to do this
@@ -127,7 +155,8 @@ impl Arguments {
         println!("{} >> {}", "Kernel".blue().bold(), self.kernel);
         println!("{} >> {}", "Uptime".blue().bold(), self.uptime);
         println!("{} >> {}", "Shell".blue().bold(), self.shell); 
-        // println!("{}", "  ".on_blue());
         println!("{} >> {}", "Memory".blue().bold(), self.memory);
+        println!("{} >> {}", "CPU".blue().bold(), self.cpu);
+        println!("{} >> {}", "GPU".blue().bold(), self.gpu);
     }
 }
