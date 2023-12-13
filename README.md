@@ -1,22 +1,27 @@
 # mfetch
+
 A system information tool written in rust
 
 # operating systems
+
 Tested systems are
-- `Arch Linux`
+
+-   `Arch Linux`
+-   `Debian`
 
 # installation
 
-#### ensure you have `cargo`, `rustup` and `rustc` installed 
+#### ensure you have `cargo`, `rustup` and `rustc` installed
 
 ```bash
 git clone https://github.com/GinoMoses/mfetch
 cd mfetch
-sudo make all
+make all
 
 ```
 
 # TODO
-- ensure mfetch supports basic distros like `debian`
-- fetch more system infromation (e.g CPU, GPU)
-- add a config file to allow slight customization
+
+-   ensure mfetch supports other distros like `RedHat`
+-   fetch more system infromation (e.g CPU, GPU)
+-   add a config file to allow slight customization
