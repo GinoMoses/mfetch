@@ -18,7 +18,7 @@ build:
 	cargo build $(release)
 
 install:
-	cp target/$(target)/$(prog) /usr/bin/$(prog)
+	sudo cp target/$(target)/$(prog) /usr/bin/$(prog)
 
 all: build install
  
