@@ -1,0 +1,6 @@
+# This is the config file for the system info script
+
+# display contains the things you want to display
+# it also controls the order of the things you want to display and the capitalization of letters
+# display = ["OS", "Host", "Kernel", "Uptime", "Shell", "Memory", "CPU", "GPU"] <- DEFAULTS
+display = ["OS", "Host", "Kernel", "Uptime", "Shell", "Memory", "CPU", "GPU"]

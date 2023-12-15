@@ -19,6 +19,8 @@ build:
 
 install:
 	sudo cp target/$(target)/$(prog) /usr/bin/$(prog)
+	mkdir -p ~/.config/mfetch
+	cp config.toml ~/.config/mfetch/
 
 all: build install
  

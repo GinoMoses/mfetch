@@ -23,5 +23,5 @@ make all
 
 # TODO
 
--   add a config file to allow slight customization
+-   expand configuration capabilities to allow a change of colors, the delimiter and adding a custom ASCII art
 -   ASCII art based on the operating system

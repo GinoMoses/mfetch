@@ -1,9 +1,32 @@
-use std::process::Command;
-use std::fs;
+use std::{fs, 
+        process::Command,
+        collections::HashMap,
+        env,  
+};
 use colored::Colorize;
+use toml;
+use serde::Deserialize;
 
 fn main() {
     let mut args: Vec<String> = Vec::new();
+    let config: Config;
+    // temporary solution, it works for now
+    let defualt_config: Config = toml::from_str("
+        display = [
+            'OS',
+            'Host',
+            'Kernel',
+            'Uptime',
+            'Shell',
+            'Memory',
+            'CPU',
+            'GPU',
+        ]").unwrap();
+    if let Ok(home_directory) = env::var("HOME") {
+        config = toml::from_str(&fs::read_to_string(format!("{}/.config/mfetch/config.toml", home_directory)).unwrap()).unwrap();
+    } else {
+        config = defualt_config;
+    }
 
     let user = Command::new("sh")
         .arg("-c")
@@ -56,7 +79,7 @@ fn main() {
         .output()
         .expect("failed to execute process");
     args.push(String::from_utf8_lossy(&shell.stdout).trim().to_string());
-    
+   
     let meminfo = &fs::read_to_string("/proc/meminfo");
     let mut memory = String::new();
     let mut memused: u32 = 0;
@@ -102,6 +125,7 @@ fn main() {
     // for some reason lspci takes a while to execute
     // I don't think there's a file like /proc/cpuinfo for gpus
     // imma look into it later
+    // also note to self: stop using more linux commands than necessary and use rust goddammit
     let gpu = Command::new("sh")
         .arg("-c")
         .arg("lspci | grep VGA | cut -d ':' -f3 | cut -d '(' -f1")
@@ -109,8 +133,14 @@ fn main() {
         .expect("failed to execute process");
     args.push(String::from_utf8_lossy(&gpu.stdout).trim().to_string());
 
-    Arguments::display(&Arguments::build(&args));
+    Arguments::display(&Arguments::build(&args), Arguments::hashmap_build(&Arguments::build(&args)), config);
 }
+
+#[derive(Deserialize, Debug)]
+struct Config {
+    display: Vec<String>,
+}
+
 struct Arguments {
     user: String,
     hostname: String,
@@ -139,24 +169,27 @@ impl Arguments {
 
         Arguments { hostname, user, os, host, kernel, uptime, shell, memory, cpu, gpu }
     }
-    fn display(&self) {
-        // there is probably a better way to do this
-        // but this is the best I could come up with tbh
-        // might fix later idk
-        // might honestly refactor the whole idea of using a struct
+    
+    fn hashmap_build(&self) -> HashMap<String, String> {
+        let mut hashmap = HashMap::new();
+        hashmap.insert("os".to_string(), self.os.clone());
+        hashmap.insert("host".to_string(), self.host.clone());
+        hashmap.insert("kernel".to_string(), self.kernel.clone());
+        hashmap.insert("uptime".to_string(), self.uptime.clone());
+        hashmap.insert("shell".to_string(), self.shell.clone());
+        hashmap.insert("memory".to_string(), self.memory.clone());
+        hashmap.insert("cpu".to_string(), self.cpu.clone());
+        hashmap.insert("gpu".to_string(), self.gpu.clone());
+        hashmap
+    }
+
+    fn display(&self, options: HashMap<String, String>, config: Config) {
         println!("{}@{}", (self.user).blue().bold(), (self.hostname).blue().bold());
         println!("-------------------------");
-        if self.os != "" {
-            println!("{} >> {}", "OS".blue().bold(), self.os);
+        for e in config.display {
+            if options.get(&e.to_lowercase()).unwrap() != "" {
+                println!("{} >> {}", &e.blue().bold(), options.get(&e.to_lowercase()).unwrap());
+            }
         }
-        if self.host != "" {
-            println!("{} >> {}", "Host".blue().bold(), self.host);
-        }
-        println!("{} >> {}", "Kernel".blue().bold(), self.kernel);
-        println!("{} >> {}", "Uptime".blue().bold(), self.uptime);
-        println!("{} >> {}", "Shell".blue().bold(), self.shell); 
-        println!("{} >> {}", "Memory".blue().bold(), self.memory);
-        println!("{} >> {}", "CPU".blue().bold(), self.cpu);
-        println!("{} >> {}", "GPU".blue().bold(), self.gpu);
     }
 }
