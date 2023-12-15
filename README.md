@@ -8,6 +8,7 @@ Tested systems are
 
 -   `Arch Linux`
 -   `Debian`
+-   `Fedora`
 
 # installation
 
@@ -22,6 +23,5 @@ make all
 
 # TODO
 
--   ensure mfetch supports other distros like `RedHat`
 -   add a config file to allow slight customization
 -   ASCII art based on the operating system
