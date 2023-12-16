@@ -132,7 +132,7 @@ fn main() {
     for line in String::from_utf8_lossy(&gpu.stdout).trim().to_string().lines() {
         if line.contains("VGA") {
             let line = &line.split(":").collect::<Vec<&str>>();
-            let line = &line[1].trim();
+            let line = &line[2].trim();
             args.push(line.to_string());
             break;
         }
