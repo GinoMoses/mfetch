@@ -100,6 +100,8 @@ fn main() {
                     let memav = &memav.parse::<u32>().unwrap() / 1024;
                     memused -= &memav;
                     memory = format!("{}M / {}M", memused, memory);
+                } else {
+                    memory.push_str("");
                 }
             }
         }
@@ -117,6 +119,7 @@ fn main() {
                     break;
                 }
             }
+            args.push("".to_string());
         }
         Err(_) => args.push("".to_string()),
     }
