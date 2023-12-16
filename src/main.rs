@@ -119,7 +119,9 @@ fn main() {
                     break;
                 }
             }
-            args.push("".to_string());
+            if args.len() < 9 {
+                args.push("".to_string());
+            }
         }
         Err(_) => args.push("".to_string()),
     }
@@ -145,6 +147,9 @@ fn main() {
             args.push(line.to_string());
             break;
         }
+    }
+    if args.len() < 10 {
+        args.push("".to_string());
     }
 
     Arguments::display(&Arguments::build(&args), Arguments::hashmap_build(&Arguments::build(&args)), config);
