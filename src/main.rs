@@ -32,14 +32,14 @@ fn main() {
         .arg("-c")
         .arg("whoami")
         .output()
-        .expect("failed to execute process");
+        .expect("failed to execute process (user fetch)");
     args.push(String::from_utf8_lossy(&user.stdout).trim().to_string());
 
     let hostname = Command::new("sh")
         .arg("-c")
         .arg("uname -n")
         .output()
-        .expect("failed to execute process");
+        .expect("failed to execute process (hostname fetch)");
     args.push(String::from_utf8_lossy(&hostname.stdout).trim().to_string());
 
     match fs::read_to_string("/etc/os-release") {
@@ -63,29 +63,28 @@ fn main() {
         .arg("-c")
         .arg("uname -r")
         .output()
-        .expect("failed to execute process");
+        .expect("failed to execute process (kernel fetch)");
     args.push(String::from_utf8_lossy(&kernel.stdout).trim().to_string());
     
     let uptime = Command::new("sh")
         .arg("-c")
         .arg("uptime -p")
         .output()
-        .expect("failed to execute process");
+        .expect("failed to execute process (uptime fetch)");
     args.push(String::from_utf8_lossy(&uptime.stdout).trim().to_string());
 
     let shell = Command::new("sh")
         .arg("-c")
         .arg("basename $SHELL")
         .output()
-        .expect("failed to execute process");
+        .expect("failed to execute process (shell fetch)");
     args.push(String::from_utf8_lossy(&shell.stdout).trim().to_string());
    
-    let meminfo = &fs::read_to_string("/proc/meminfo");
     let mut memory = String::new();
     let mut memused: u32 = 0;
-    match meminfo {
-        Ok(mem) => {
-            for line in mem.lines() {
+    match &fs::read_to_string("/proc/meminfo") {
+        Ok(meminfo) => {
+            for line in meminfo.lines() {
                 if line.contains("MemTotal") {
                     let memtotal = &line.split(":").collect::<Vec<&str>>();
                     let memtotal = &memtotal[1].split("kB").collect::<Vec<&str>>();
@@ -125,13 +124,25 @@ fn main() {
     // for some reason lspci takes a while to execute
     // I don't think there's a file like /proc/cpuinfo for gpus
     // imma look into it later
-    // also note to self: stop using more linux commands than necessary and use rust goddammit
     let gpu = Command::new("sh")
         .arg("-c")
-        .arg("lspci | grep VGA | cut -d ':' -f3 | cut -d '(' -f1")
+        .arg("lspci")
         .output()
-        .expect("failed to execute process");
-    args.push(String::from_utf8_lossy(&gpu.stdout).trim().to_string());
+        .expect("failed to execute process (gpu fetch)");
+    for line in String::from_utf8_lossy(&gpu.stdout).trim().to_string().lines() {
+        if line.contains("VGA") {
+            let line = &line.split(":").collect::<Vec<&str>>();
+            let line = &line[1].trim();
+            args.push(line.to_string());
+            break;
+        }
+        if line.contains("3D controller") {
+            let line = &line.split(":").collect::<Vec<&str>>();
+            let line = &line[3].trim();
+            args.push(line.to_string());
+            break;
+        }
+    }
 
     Arguments::display(&Arguments::build(&args), Arguments::hashmap_build(&Arguments::build(&args)), config);
 }
