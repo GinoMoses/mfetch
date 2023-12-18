@@ -1,6 +1,31 @@
 # This is the config file for the system info script
 
 # display contains the things you want to display
-# it also controls the order of the things you want to display and the capitalization of letters
-# display = ["OS", "Host", "Kernel", "Uptime", "Shell", "Memory", "CPU", "GPU"] <- DEFAULTS
+# THIS IS CASE SENSITIVE
+# Until I figure out a better way for displaying only certain things this is how it is
+# display = ["OS", "Host", "Kernel", "Uptime", "Shell", "Memory", "CPU", "GPU"] <- This is the default
 display = ["OS", "Host", "Kernel", "Uptime", "Shell", "Memory", "CPU", "GPU"]
+
+# default ascii art
+# for now this is the only variable with an ascii art
+# you can change it to your own
+# in the future automatic OS detection will be added
+# also there will be a "custom_ascii" variable independent of the OS and the default ascii
+default_ascii = [
+"         _nnnn_",
+"        dGGGGMMb",
+"       @p~qp~~qMb",
+"       M|@||@) M|",
+"       @,----.JM|",
+"      JS^\\__/  qKL",
+"     dZP        qKRb",
+"    dZP          qKKb",
+"   fZP            SMMb",
+"   HZM            MMMM",
+"   FqM            MMMM",
+" __| .        ||dSqML",
+" |    `.       | `' Zq",
+"_)      .___.,|     .'",
+"\\____   )MMMMMP|   .'",
+"     `-'       `--' hjm",
+]

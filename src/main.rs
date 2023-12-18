@@ -21,7 +21,10 @@ fn main() {
             'Memory',
             'CPU',
             'GPU',
-        ]").unwrap();
+        ]
+
+        default_ascii = ['what', 'is', 'this', 'ascii', 'art', 'thing', 'lol']
+        ").unwrap();
     if let Ok(home_directory) = env::var("HOME") {
         config = toml::from_str(&fs::read_to_string(format!("{}/.config/mfetch/config.toml", home_directory)).unwrap()).unwrap();
     } else {
@@ -93,6 +96,7 @@ fn main() {
                     memused = memtotal;
                     memory.push_str(&memtotal.to_string());
                 }
+
                 if line.contains("MemAvailable") {
                     let memav = &line.split(":").collect::<Vec<&str>>();
                     let memav = &memav[1].split("kB").collect::<Vec<&str>>();
@@ -141,6 +145,7 @@ fn main() {
             args.push(line.to_string());
             break;
         }
+
         if line.contains("3D controller") {
             let line = &line.split(":").collect::<Vec<&str>>();
             let line = &line[3].trim();
@@ -148,6 +153,7 @@ fn main() {
             break;
         }
     }
+    
     if args.len() < 10 {
         args.push("".to_string());
     }
@@ -155,9 +161,10 @@ fn main() {
     Arguments::display(&Arguments::build(&args), Arguments::hashmap_build(&Arguments::build(&args)), config);
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 struct Config {
     display: Vec<String>,
+    default_ascii: Vec<String>,
 }
 
 struct Arguments {
@@ -203,12 +210,40 @@ impl Arguments {
     }
 
     fn display(&self, options: HashMap<String, String>, config: Config) {
-        println!("{}@{}", (self.user).blue().bold(), (self.hostname).blue().bold());
-        println!("-------------------------");
+        let mut ascii: Vec<String> = ascii_insert(&config).lines().map(|line| line.blue().bold().to_string()).collect();
+        let min_lines = config.display.len();
+        let max_line_length = ascii.iter().map(|line| line.len()).max().unwrap_or(0);
+        
+        for string in &mut ascii {
+            let fill = max_line_length - string.len();
+            string.push_str(&" ".repeat(fill));
+        }
+
+        let satisfy_min = min_lines.saturating_sub(ascii.len());
+        let filler = " ".repeat(max_line_length);
+
+        for _ in 0..satisfy_min {
+            ascii.push(filler.clone());
+        
+        }
+
+        ascii[0] += format!("   {}@{}", (self.user).blue().bold(), (self.hostname).blue().bold()).as_str();
+        ascii[1] += "   ";
+        ascii[1] += "-".repeat(self.user.len() + self.hostname.len() + 1).as_str();
+        let mut i = 0;
+        
         for e in config.display {
             if options.get(&e.to_lowercase()).unwrap() != "" {
-                println!("{} >> {}", &e.blue().bold(), options.get(&e.to_lowercase()).unwrap());
+                ascii[i + 2] += format!("   {} >> {}", &e.blue().bold(), options.get(&e.to_lowercase()).unwrap()).as_str();
+                i += 1;
             }
         }
+
+        for line in ascii {
+            println!("{}", line);
+        }
     }
+}
+fn ascii_insert(config: &Config) -> String { 
+    config.default_ascii.join("\n")
 }

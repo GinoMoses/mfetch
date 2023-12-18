@@ -23,5 +23,5 @@ make all
 
 # TODO
 
--   expand configuration capabilities to allow a change of colors, the delimiter and adding a custom ASCII art
+-   expand configuration capabilities (e.g the colors, the delimiter)
 -   ASCII art based on the operating system
